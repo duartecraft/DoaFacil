@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DoaFácil</string>
+    <string name="welcome">Bem-vindo ao DoaFácil</string>
+    <string name="slogan">Conectando Corações, Transformando Vidas</string>
+    <string name="featured_ngos">ONGs em Destaque</string>
+    <string name="quick_actions">Ações Rápidas</string>
+    <string name="view_all_ngos">Ver Todas ONGs</string>
+    <string name="my_donations">Minhas Doações</string>
+</resources>
