@@ -12,8 +12,15 @@ import br.com.doafacil.screens.*
 fun Navigation(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Routes.HOME
+        startDestination = Routes.LOGIN
     ) {
+        composable(Routes.LOGIN) {
+            LoginScreen(navController)
+        }
+        composable(Routes.RATE) {
+            RateScreen(navController)
+        }
+
         composable(Routes.HOME) {
             HomeScreen(navController)
         }
@@ -21,6 +28,11 @@ fun Navigation(navController: NavHostController) {
         composable(Routes.NGO_LIST) {
             NGOListScreen(navController)
         }
+
+        composable(Routes.NGO_LIST) {
+            NGOListScreen(navController)
+        }
+
         
         composable(
             route = Routes.NGO_DETAILS,

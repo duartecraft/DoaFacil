@@ -38,6 +38,34 @@ fun AllPreviews() {
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 PreviewSection(
+                    title = "Tela de Login",
+                    content = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+
+                                .background(MaterialTheme.colorScheme.surface)
+                        ) {
+                            LoginScreen(rememberNavController())
+                        }
+                    }
+                )
+
+                PreviewSection(
+                    title = "Tela de Avaliação",
+                    content = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+
+                                .background(MaterialTheme.colorScheme.surface)
+                        ) {
+                            RateScreen(rememberNavController())
+                        }
+                    }
+                )
+
+                PreviewSection(
                     title = "Tela Inicial",
                     content = {
                         Box(

@@ -9,4 +9,8 @@
     <string name="my_donations">Minhas Doações</string>
     <string name="your_name">Qual é o seu nome?</string>
     <string name="next">Próximo</string>
+    <string name="password">Digite sua senha</string>
+    <string name="email">Digite sueu e-mail</string>
+    <string name="login">Logar</string>
+    <string name="rate">Avalie-nos</string>
 </resources>
