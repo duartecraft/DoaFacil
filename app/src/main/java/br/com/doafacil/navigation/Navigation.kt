@@ -39,5 +39,19 @@ fun Navigation(navController: NavHostController) {
         composable(Routes.DONATION_HISTORY) {
             DonationHistoryScreen(navController)
         }
+
+        composable(
+            route = Routes.AGENDAMENTO,
+            arguments = listOf(
+                navArgument("ngoId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            AgendamentoScreen(
+                ngoId = backStackEntry.arguments?.getString("ngoId") ?: "",
+                navController = navController
+            )
+        }
     }
 } 

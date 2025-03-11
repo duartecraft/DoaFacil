@@ -123,12 +123,27 @@ private fun NGOCard(ngo: NGO, navController: NavController) {
             )
             
             Spacer(modifier = Modifier.height(16.dp))
-            
-            Button(
-                onClick = { navController.navigate(Routes.ngoDetails(ngo.id)) },
-                modifier = Modifier.fillMaxWidth()
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Ver Detalhes")
+                Button(
+                    onClick = { navController.navigate(Routes.ngoDetails(ngo.id)) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Ver Detalhes")
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    onClick = { navController.navigate(Routes.agendamento(ngo.id)) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
+                ) {
+                    Text("Agendar Visita")
+                }
             }
         }
     }
