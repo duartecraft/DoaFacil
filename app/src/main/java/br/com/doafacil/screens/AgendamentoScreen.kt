@@ -83,13 +83,12 @@ fun AgendamentoScreen(ngoId: String, navController: NavController) {
             }
 
             val endTime = Calendar.getInstance().apply {
-                set(year, month, day, hour + 1, minute) // Duração de 1 hora
+                set(year, month, day, hour + 1, minute)
             }
 
             GoogleCalendarHelper.createEvent(
-                context = context,
                 title = "Visita à ONG ${ngo?.name}",
-                location = ngo?.location ?: "Local não informado",
+                location = "${ngo?.location}",
                 description = "Visita agendada via DoaFacil",
                 startMillis = startTime.timeInMillis,
                 endMillis = endTime.timeInMillis
