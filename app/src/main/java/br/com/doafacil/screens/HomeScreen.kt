@@ -40,18 +40,22 @@ fun HomeScreen(navController: NavController) {
             item {
                 WelcomeSection()
             }
-            
+
             item {
                 FeaturedNGOsSection(navController)
             }
-            
+
             item {
                 QuickActionsSection(navController)
+            }
+
+
+            item {
+                EvaluationSection(navController)
             }
         }
     }
 }
-
 @Composable
 private fun WelcomeSection() {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -68,6 +72,19 @@ private fun WelcomeSection() {
         )
     }
 }
+
+@Composable
+private fun EvaluationSection(navController: NavController) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Button(
+            onClick = { navController.navigate("RATE") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.rate))
+        }
+    }
+}
+
 
 @Composable
 private fun FeaturedNGOsSection(navController: NavController) {

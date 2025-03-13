@@ -1,1 +1,4 @@
 /build
+# Ignorar credenciais sensíveis
+app/src/main/res/raw/
+app/src/main/res/raw/credentials.json

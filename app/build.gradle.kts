@@ -16,6 +16,26 @@ android {
     versionName = "1.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+    // Variáveis do local.properties
+    val localPropertiesFile = rootProject.file("local.properties")
+
+    if (localPropertiesFile.exists()) {
+      val properties = mutableMapOf<String, String>()
+      localPropertiesFile.forEachLine { line ->
+        val parts = line.split("=")
+        if (parts.size == 2) {
+          val key = parts[0].trim()
+          val value = parts[1].trim()
+          properties[key] = value
+        }
+      }
+
+      buildConfigField("String", "GOOGLE_CLIENT_ID", "\"${properties["GOOGLE_CLIENT_ID"]}\"")
+      buildConfigField("String", "GOOGLE_CLIENT_SECRET", "\"${properties["GOOGLE_CLIENT_SECRET"]}\"")
+      buildConfigField("String", "GOOGLE_REFRESH_TOKEN", "\"${properties["GOOGLE_REFRESH_TOKEN"]}\"")
+    }
+
   }
 
   buildTypes {
@@ -33,6 +53,14 @@ android {
   }
   buildFeatures {
     compose = true
+    buildConfig = true
+  }
+
+  packaging {
+    resources {
+      excludes += "META-INF/INDEX.LIST"
+      excludes += "META-INF/DEPENDENCIES"
+    }
   }
 }
 
@@ -58,7 +86,20 @@ dependencies {
   androidTestImplementation("androidx.test:rules:1.5.0")
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
+  implementation("androidx.compose.material3:material3:1.2.0")
 
   implementation(libs.androidx.navigation.compose)
 
+  //Dependências para o Calendário Interativo
+  implementation("com.maxkeppeler.sheets-compose-dialogs:core:1.0.2")
+  implementation("com.maxkeppeler.sheets-compose-dialogs:calendar:1.0.2")
+
+  // Google Play Services Auth para login no Google (Autenticação)
+  implementation("com.google.android.gms:play-services-auth:20.7.0")
+
+  // Google Calendar API
+  implementation("com.google.api-client:google-api-client-android:1.33.2")
+  implementation("com.google.oauth-client:google-oauth-client-jetty:1.34.1")
+  implementation("com.google.auth:google-auth-library-oauth2-http:1.30.0")
+  implementation("com.google.apis:google-api-services-calendar:v3-rev20250115-2.0.0")
 }

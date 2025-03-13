@@ -7,4 +7,10 @@
     <string name="quick_actions">Ações Rápidas</string>
     <string name="view_all_ngos">Ver Todas ONGs</string>
     <string name="my_donations">Minhas Doações</string>
+    <string name="your_name">Qual é o seu nome?</string>
+    <string name="next">Próximo</string>
+    <string name="password">Digite sua senha</string>
+    <string name="email">Digite seu e-mail</string>
+    <string name="login">Login</string>
+    <string name="rate">Avalie-nos</string>
 </resources>

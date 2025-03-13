@@ -1,61 +1,110 @@
 package br.com.doafacil.screens
 
+import android.app.Activity
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import br.com.doafacil.ui.theme.DoaFacilTheme
-import java.text.SimpleDateFormat
+import br.com.doafacil.auth.GoogleAuthHelper
+import br.com.doafacil.utils.GoogleCalendarHelper
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AgendamentoScreen(
-    ngoId: String,
-    navController: NavController
-) {
+fun AgendamentoScreen(ngoId: String, navController: NavController) {
     val context = LocalContext.current
+    val activity = context as? Activity
 
     val ngo = remember {
         listOf(
-            NGO("1", "Amigos do Bem", "São Paulo, SP", "Combate à fome e pobreza"),
-            NGO("2", "Médicos Sem Fronteiras", "Rio de Janeiro, RJ", "Assistência médica humanitária"),
-            NGO("3", "WWF Brasil", "Brasília, DF", "Conservação da natureza"),
-            NGO("4", "UNICEF Brasil", "São Paulo, SP", "Defesa dos direitos das crianças"),
-            NGO("5", "Teto Brasil", "São Paulo, SP", "Construção de moradias")
+            NGO("1", "Amigos do Bem", "São Paulo, SP", "Combate à fome e pobreza")
         ).find { it.id == ngoId }
     }
 
     var selectedDate by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf("") }
+    var showConfirmationDialog by remember { mutableStateOf(false) }
+
+    val calendar = Calendar.getInstance()
+
+    fun showDatePicker() {
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                selectedDate = "$dayOfMonth/${month + 1}/$year"
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    fun showTimePicker() {
+        TimePickerDialog(
+            context,
+            { _, hourOfDay, minute ->
+                selectedTime = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            true
+        ).show()
+    }
+
+    fun confirmarAgendamento() {
+        if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
+            showConfirmationDialog = true
+        } else {
+            Toast.makeText(context, "Preencha a data e horário!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun addEventToGoogleCalendar(context: Context) {
+        if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
+            val dateParts = selectedDate.split("/")
+            val day = dateParts[0].toInt()
+            val month = dateParts[1].toInt() - 1
+            val year = dateParts[2].toInt()
+
+            val timeParts = selectedTime.split(":")
+            val hour = timeParts[0].toInt()
+            val minute = timeParts[1].toInt()
+
+            val startTime = Calendar.getInstance().apply {
+                set(year, month, day, hour, minute)
+            }
+
+            val endTime = Calendar.getInstance().apply {
+                set(year, month, day, hour + 1, minute) // Duração de 1 hora
+            }
+
+            GoogleCalendarHelper.createEvent(
+                context = context,
+                title = "Visita à ONG ${ngo?.name}",
+                location = ngo?.location ?: "Local não informado",
+                description = "Visita agendada via DoaFacil",
+                startMillis = startTime.timeInMillis,
+                endMillis = endTime.timeInMillis
+            )
+
+            Toast.makeText(context, "Agendamento enviado ao Google Calendar!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "Preencha a data e horário!", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Agendar Visita") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Voltar"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+            CenterAlignedTopAppBar(
+                title = {Text("Agendar Visita") }
             )
         }
     ) { paddingValues ->
@@ -64,89 +113,67 @@ fun AgendamentoScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (ngo != null) {
-                Text(
-                    text = "ONG: ${ngo.name}",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
+            Text(text = "ONG: ${ngo?.name}")
+            Text(text = "Localização: ${ngo?.location}")
 
-                Text(
-                    text = "Localização: ${ngo.location}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = { showDatePicker() }, modifier = Modifier.fillMaxWidth()) {
+                Text(text = if (selectedDate.isEmpty()) "Escolha a data" else "Data: $selectedDate")
+            }
 
-                OutlinedTextField(
-                    value = selectedDate,
-                    onValueChange = { selectedDate = it },
-                    label = { Text("Escolha a data") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+            Button(onClick = { showTimePicker() }, modifier = Modifier.fillMaxWidth()) {
+                Text(text = if (selectedTime.isEmpty()) "Escolha o horário" else "Horário: $selectedTime")
+            }
 
-                OutlinedTextField(
-                    value = selectedTime,
-                    onValueChange = { selectedTime = it },
-                    label = { Text("Escolha o horário") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { confirmarAgendamento() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Confirmar Agendamento")
+            }
 
-                Button(
-                    onClick = {
-                        if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
-                            Toast.makeText(
-                                context,
-                                "Visita agendada para $selectedDate às $selectedTime!",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            navController.navigateUp()
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Preencha a data e horário!",
-                                Toast.LENGTH_SHORT
-                            ).show()
+            if (showConfirmationDialog) {
+                AlertDialog(
+                    onDismissRequest = { showConfirmationDialog = false },
+                    title = { Text("Agendamento Confirmado!") },
+                    text = {
+                        Column {
+                            Text("Sua visita foi agendada com sucesso!")
+                            Text("Deseja adicionar esse evento automaticamente ao Google Calendar?")
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Confirmar Agendamento")
-                }
-            } else {
-                Text(
-                    text = "Erro ao carregar informações da ONG.",
-                    color = MaterialTheme.colorScheme.error
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                val userAccount = GoogleAuthHelper.getSignedInAccount(context)
+                                if (userAccount == null) {
+                                    GoogleAuthHelper.signInGoogle(context, activity!!)
+                                } else {
+                                    addEventToGoogleCalendar(context)
+                                }
+                                showConfirmationDialog = false
+                            }
+                        ) {
+                            Text("Adicionar ao Google Calendar")
+                        }
+                    },
+                    dismissButton = {
+                        Button(
+                            onClick = {
+                                showConfirmationDialog = false
+                                navController.popBackStack() // Volta para a tela da ONG
+                            }
+                        ) {
+                            Text("Seguir no app")
+                        }
+                    }
                 )
             }
-        }
-    }
-}
-
-@Preview(
-    name = "Tela de Agendamento",
-    showBackground = true,
-    showSystemUi = true,
-    device = "spec:width=411dp,height=891dp,dpi=420,isRound=false,chinSize=0dp,orientation=portrait"
-)
-@Composable
-fun AgendamentoScreenPreview() {
-    val previewNavController = rememberNavController()
-    DoaFacilTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            AgendamentoScreen(
-                ngoId = "1",
-                navController = previewNavController
-            )
         }
     }
 }
