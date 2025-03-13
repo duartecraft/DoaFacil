@@ -114,4 +114,7 @@ dependencies {
   implementation("com.google.oauth-client:google-oauth-client-jetty:1.34.1")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.30.0")
   implementation("com.google.apis:google-api-services-calendar:v3-rev20250115-2.0.0")
+
+  implementation("com.stripe:stripe-android:20.36.2")
+
 }
