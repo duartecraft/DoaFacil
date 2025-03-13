@@ -1,1 +1,6 @@
 /build
+# Credenciais sensíveis
+app/src/main/res/raw/
+app/src/main/res/raw/credentials.json
+# Credenciais locais
+local.properties
