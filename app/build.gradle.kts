@@ -14,14 +14,13 @@ android {
     targetSdk = 35
     versionCode = 1
     versionName = "1.0"
-
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
     // Variáveis do local.properties
     val localPropertiesFile = rootProject.file("local.properties")
+    val properties = mutableMapOf<String, String>()
 
     if (localPropertiesFile.exists()) {
-      val properties = mutableMapOf<String, String>()
       localPropertiesFile.forEachLine { line ->
         val parts = line.split("=")
         if (parts.size == 2) {
@@ -30,12 +29,23 @@ android {
           properties[key] = value
         }
       }
-
-      buildConfigField("String", "GOOGLE_CLIENT_ID", "\"${properties["GOOGLE_CLIENT_ID"]}\"")
-      buildConfigField("String", "GOOGLE_CLIENT_SECRET", "\"${properties["GOOGLE_CLIENT_SECRET"]}\"")
-      buildConfigField("String", "GOOGLE_REFRESH_TOKEN", "\"${properties["GOOGLE_REFRESH_TOKEN"]}\"")
     }
 
+    val googleClientId: String? = properties["GOOGLE_CLIENT_ID"]
+    val googleClientSecret: String? = properties["GOOGLE_CLIENT_SECRET"]
+    val googleRefreshToken: String? = properties["GOOGLE_REFRESH_TOKEN"]
+    
+    googleClientId?.let {
+      buildConfigField("String", "GOOGLE_CLIENT_ID", "\"$it\"")
+    } ?: println("⚠ GOOGLE_CLIENT_ID não encontrado no local.properties!")
+
+    googleClientSecret?.let {
+      buildConfigField("String", "GOOGLE_CLIENT_SECRET", "\"$it\"")
+    } ?: println("⚠ GOOGLE_CLIENT_SECRET não encontrado no local.properties!")
+
+    googleRefreshToken?.let {
+      buildConfigField("String", "GOOGLE_REFRESH_TOKEN", "\"$it\"")
+    } ?: println("⚠ GOOGLE_REFRESH_TOKEN não encontrado no local.properties!")
   }
 
   buildTypes {
@@ -44,13 +54,16 @@ android {
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
   }
+
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
   }
+
   kotlinOptions {
     jvmTarget = "11"
   }
+
   buildFeatures {
     compose = true
     buildConfig = true
@@ -65,7 +78,6 @@ android {
 }
 
 dependencies {
-
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.activity.compose)
@@ -90,7 +102,7 @@ dependencies {
 
   implementation(libs.androidx.navigation.compose)
 
-  //Dependências para o Calendário Interativo
+  // Dependências para o Calendário Interativo
   implementation("com.maxkeppeler.sheets-compose-dialogs:core:1.0.2")
   implementation("com.maxkeppeler.sheets-compose-dialogs:calendar:1.0.2")
 
