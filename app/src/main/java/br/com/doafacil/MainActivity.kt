@@ -10,10 +10,21 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import br.com.doafacil.navigation.Navigation
 import br.com.doafacil.ui.theme.DoaFacilTheme
+import br.com.doafacil.utils.GamificationManager  // Import necessário
+import br.com.doafacil.utils.StripePaymentHelper  // Import do StripePaymentHelper
 
 class MainActivity : ComponentActivity() {
+    private lateinit var stripePaymentHelper: StripePaymentHelper
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Inicializa o StripePaymentHelper antes de qualquer uso
+        stripePaymentHelper = StripePaymentHelper(this, this)
+
+        // Inicializa o GamificationManager antes de qualquer uso
+        GamificationManager.init(this)
+
         setContent {
             DoaFacilTheme {
                 Surface(
@@ -21,9 +32,9 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    Navigation(navController)
+                    Navigation(navController, stripePaymentHelper)
                 }
             }
         }
     }
-} 
+}

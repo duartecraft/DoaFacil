@@ -46,6 +46,17 @@ android {
     googleRefreshToken?.let {
       buildConfigField("String", "GOOGLE_REFRESH_TOKEN", "\"$it\"")
     } ?: println("⚠ GOOGLE_REFRESH_TOKEN não encontrado no local.properties!")
+
+
+    val stripePublicKey: String? = properties["STRIPE_PUBLIC_KEY"]
+    stripePublicKey?.let {
+      buildConfigField("String", "STRIPE_PUBLIC_KEY", "\"$it\"")
+    } ?: println("⚠ STRIPE_PUBLIC_KEY não encontrado no local.properties!")
+
+    val stripeSecretKey: String? = properties["STRIPE_SECRET_KEY"]
+    stripeSecretKey?.let {
+      buildConfigField("String", "STRIPE_SECRET_KEY", "\"$it\"")
+    } ?: println("⚠ STRIPE_SECRET_KEY não encontrado no local.properties!")
   }
 
   buildTypes {
@@ -114,4 +125,9 @@ dependencies {
   implementation("com.google.oauth-client:google-oauth-client-jetty:1.34.1")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.30.0")
   implementation("com.google.apis:google-api-services-calendar:v3-rev20250115-2.0.0")
+
+  implementation("com.stripe:stripe-android:21.6.0")
+  implementation("com.squareup.retrofit2:retrofit:2.9.0")
+  implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
 }

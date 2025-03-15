@@ -1,6 +1,9 @@
+# Diretórios e arquivos desnecessários do Android Studio
+.idea/
 *.iml
-.gradle
-/local.properties
+build/
+.gradle/
+
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -8,8 +11,17 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 .DS_Store
-/build
-/captures
+
+# Arquivos sensíveis
+*.keystore
+*.env
+/app/secrets/
+firebase.json
+
+
 .externalNativeBuild
 .cxx
 local.properties
+/app/src/main/res/raw/doafacil-8bdcc781bc70.json
+.kotlin/
+gradle.properties

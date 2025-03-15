@@ -9,12 +9,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.doafacil.ui.theme.DoaFacilTheme
+import br.com.doafacil.utils.GamificationManager
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -30,33 +32,36 @@ data class Donation(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DonationHistoryScreen(navController: NavController) {
-    // Lista mockada de doações (em um app real, viria de um ViewModel)
+    val isPreview = LocalInspectionMode.current
+
     val donations = remember {
         listOf(
-            Donation(
-                "1",
-                "Amigos do Bem",
-                100.0,
-                Date(),
-                "Confirmado"
-            ),
-            Donation(
-                "2",
-                "Médicos Sem Fronteiras",
-                50.0,
-                Date(System.currentTimeMillis() - 86400000), // Ontem
-                "Confirmado"
-            ),
-            Donation(
-                "3",
-                "WWF Brasil",
-                75.0,
-                Date(System.currentTimeMillis() - 172800000), // 2 dias atrás
-                "Confirmado"
-            )
+            Donation("1", "Amigos do Bem", 100.0, Date(), "Confirmado"),
+            Donation("2", "Médicos Sem Fronteiras", 50.0, Date(System.currentTimeMillis() - 86400000), "Confirmado"),
+            Donation("3", "WWF Brasil", 75.0, Date(System.currentTimeMillis() - 172800000), "Confirmado")
         )
     }
-    
+
+    val userPoints by remember {
+        mutableIntStateOf(
+            if (isPreview) donations.size * 10 else GamificationManager.getPoints()
+        )
+    }
+
+    val userLevel by remember {
+        mutableStateOf(
+            when {
+                userPoints >= 50000 -> "Rubi"
+                userPoints >= 10000 -> "Safira"
+                userPoints >= 5000 -> "Diamante"
+                userPoints >= 1000 -> "Ouro"
+                userPoints >= 500 -> "Prata"
+                userPoints >= 100 -> "Bronze"
+                else -> "Iniciante"
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -77,33 +82,30 @@ fun DonationHistoryScreen(navController: NavController) {
             )
         }
     ) { paddingValues ->
-        if (donations.isEmpty()) {
-            // Estado vazio
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Você ainda não fez nenhuma doação.\nQue tal começar agora?",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        } else {
-            // Lista de doações
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Visão Geral das Doações",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            DonationDashboard(donations, userPoints, userLevel)
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Últimas doações",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(0.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                item {
-                    DonationSummary(donations)
-                }
-                
                 items(donations) { donation ->
                     DonationCard(donation)
                 }
@@ -113,10 +115,42 @@ fun DonationHistoryScreen(navController: NavController) {
 }
 
 @Composable
-private fun DonationSummary(donations: List<Donation>) {
+fun DonationDashboard(donations: List<Donation>, userPoints: Int, userLevel: String) {
     val totalDonated = donations.sumOf { it.amount }
     val numberFormat = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
-    
+
+    val nextLevel = when {
+        userPoints < 100 -> "Bronze"
+        userPoints < 500 -> "Prata"
+        userPoints < 1000 -> "Ouro"
+        userPoints < 5000 -> "Diamante"
+        userPoints < 10000 -> "Safira"
+        else -> "Rubi"
+    }
+
+    val pointsForNextLevel = when {
+        userPoints < 100 -> 100 - userPoints
+        userPoints < 500 -> 500 - userPoints
+        userPoints < 1000 -> 1000 - userPoints
+        userPoints < 5000 -> 5000 - userPoints
+        else -> 0
+    }
+
+    val motivationalMessage = if (userPoints < 100)
+        "Parabéns! Você deu o primeiro passo para transformar vidas!" else ""
+
+    CardSection("Total doado", numberFormat.format(totalDonated))
+    CardSection(
+        "Nível e Pontuação",
+        "Nível: $userLevel\nPontuação: $userPoints pontos (+10 por doação)\nFaltam $pointsForNextLevel pontos para atingir *$nextLevel*"
+    )
+    if (motivationalMessage.isNotEmpty()) {
+        CardSection("Mensagem Motivacional", motivationalMessage)
+    }
+}
+
+@Composable
+fun CardSection(title: String, content: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -128,96 +162,46 @@ private fun DonationSummary(donations: List<Donation>) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text(
-                text = "Resumo das Doações",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = "Total doado: ${numberFormat.format(totalDonated)}",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            
-            Text(
-                text = "Número de doações: ${donations.size}",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Text(title, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(content)
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DonationCard(donation: Donation) {
+fun DonationCard(donation: Donation) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR"))
     val numberFormat = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
-    
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        onClick = { /* Navegar para detalhes da doação */ }
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text(
-                text = donation.ngoName,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            Text(
-                text = numberFormat.format(donation.amount),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = dateFormat.format(donation.date),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Text(
-                    text = donation.status,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = when (donation.status) {
-                        "Confirmado" -> MaterialTheme.colorScheme.primary
-                        else -> MaterialTheme.colorScheme.error
-                    }
-                )
-            }
+            Text(donation.ngoName, fontWeight = FontWeight.Bold)
+            Text(numberFormat.format(donation.amount), color = MaterialTheme.colorScheme.primary)
+            Text(dateFormat.format(donation.date))
         }
     }
 }
 
-@Preview(
-    name = "Histórico de Doações",
-    showBackground = true,
-    showSystemUi = true,
-    device = "spec:width=411dp,height=891dp,dpi=420,isRound=false,chinSize=0dp,orientation=portrait"
-)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DonationHistoryScreenPreview() {
-    val previewNavController = rememberNavController()
+    val fakeNavController = rememberNavController()
     DoaFacilTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            DonationHistoryScreen(previewNavController)
+            DonationHistoryScreen(navController = fakeNavController)
         }
     }
-} 
+}

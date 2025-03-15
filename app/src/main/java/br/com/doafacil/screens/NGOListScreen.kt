@@ -89,7 +89,6 @@ fun NGOListScreen(navController: NavController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NGOCard(ngo: NGO, navController: NavController) {
     Card(
@@ -138,11 +137,11 @@ private fun NGOCard(ngo: NGO, navController: NavController) {
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Button(
-                    onClick = { navController.navigate(Routes.agendamento(ngo.id)) },
+                    onClick = { navController.navigate(Routes.payment(ngo.id, ngo.name)) },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
                 ) {
-                    Text("Agendar Visita")
+                    Text("Realizar Doação")
                 }
             }
         }
