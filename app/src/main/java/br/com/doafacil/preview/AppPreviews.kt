@@ -119,7 +119,11 @@ fun AllPreviews() {
                                 .height(400.dp)
                                 .background(MaterialTheme.colorScheme.surface)
                         ) {
-                            DonationHistoryScreen(rememberNavController())
+                            DonationHistoryScreen(
+                                navController = rememberNavController(),
+                                userPoints = 100, // Valor fictício apenas para o preview
+                                userLevel = "Bronze" // Valor fictício apenas para o preview
+                            )
                         }
                     }
                 )

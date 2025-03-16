@@ -1,14 +1,17 @@
 package br.com.doafacil.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -21,20 +24,23 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.doafacil.R
 import br.com.doafacil.ui.theme.DoaFacilTheme
+import br.com.doafacil.utils.GamificationAction
+import br.com.doafacil.utils.GamificationManager
 import kotlinx.coroutines.delay
+import android.widget.Toast
 
+@SuppressLint("AutoboxingStateCreation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RateScreen(navController: NavController) {
-    var rating by remember {
-        mutableStateOf(0)
-    }
-    var feedback by remember {
-        mutableStateOf("")
-    }
-    var showDialog by remember {
-        mutableStateOf(false)
-    }
+    val context = LocalContext.current
+    val isInPreview = LocalInspectionMode.current  // <- Correção aqui
+
+    var rating by remember { mutableIntStateOf(0) }
+    var feedback by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
+
+    val hasRatedBefore by remember { mutableStateOf(GamificationManager.hasRatedBefore()) }
 
     Scaffold(
         topBar = {
@@ -43,11 +49,10 @@ fun RateScreen(navController: NavController) {
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate("HOME") }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Voltar",
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
-
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -74,7 +79,6 @@ fun RateScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Estrelas de avaliação
             Row {
                 for (i in 1..5) {
                     IconButton(onClick = { rating = i }) {
@@ -90,7 +94,6 @@ fun RateScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de texto para feedback
             OutlinedTextField(
                 value = feedback,
                 onValueChange = { feedback = it },
@@ -102,20 +105,33 @@ fun RateScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botão de envio
             Button(
                 onClick = {
                     if (rating > 0) {
                         showDialog = true
+                        if (!hasRatedBefore) {
+                            GamificationManager.addPointsForAction(GamificationAction.FIRST_REVIEW)
+
+                            // Somente exibe Toast se não estiver no Preview
+                            if (!isInPreview) {
+                                Toast.makeText(
+                                    context,
+                                    "Obrigado pelo feedback!\nVocê ganhou ${GamificationAction.FIRST_REVIEW.points} pontos!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+
+                            GamificationManager.markAsRated()
+                        }
                     }
                 },
                 enabled = rating > 0
-
             ) {
                 Text("Enviar Avaliação")
             }
         }
     }
+
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { },
@@ -124,7 +140,6 @@ fun RateScreen(navController: NavController) {
             confirmButton = {}
         )
 
-        // Espera 3 segundos e navega para outra tela
         LaunchedEffect(Unit) {
             delay(3000)
             showDialog = false
@@ -133,17 +148,18 @@ fun RateScreen(navController: NavController) {
     }
 }
 
-
-@Preview(showSystemUi = true)
+@Preview(showBackground = true)
 @Composable
 fun RateScreenPreview() {
-    val previewNavController = rememberNavController()
+
     DoaFacilTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            RateScreen(previewNavController)
+            RateScreen(navController = rememberNavController())
         }
     }
 }
+
+
