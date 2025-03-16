@@ -15,6 +15,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.doafacil.ui.theme.DoaFacilTheme
 import br.com.doafacil.navigation.Routes
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 data class NGO(
     val id: String,
@@ -27,7 +28,7 @@ data class NGO(
 @Composable
 fun NGOListScreen(navController: NavController) {
     var searchQuery by remember { mutableStateOf("") }
-    
+
     // Lista mockada de ONGs
     val ngos = remember {
         listOf(
@@ -38,14 +39,23 @@ fun NGOListScreen(navController: NavController) {
             NGO("5", "Teto Brasil", "São Paulo, SP", "Construção de moradias emergenciais para famílias vulneráveis")
         )
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("ONGs Parceiras") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Voltar"
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary // Aqui define a cor da seta
                 )
             )
         }
@@ -71,7 +81,7 @@ fun NGOListScreen(navController: NavController) {
                 },
                 singleLine = true
             )
-            
+
             // Lista de ONGs
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -80,7 +90,7 @@ fun NGOListScreen(navController: NavController) {
             ) {
                 items(ngos.filter {
                     it.name.contains(searchQuery, ignoreCase = true) ||
-                    it.description.contains(searchQuery, ignoreCase = true)
+                            it.description.contains(searchQuery, ignoreCase = true)
                 }) { ngo ->
                     NGOCard(ngo = ngo, navController = navController)
                 }
@@ -89,7 +99,6 @@ fun NGOListScreen(navController: NavController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NGOCard(ngo: NGO, navController: NavController) {
     Card(
@@ -106,29 +115,44 @@ private fun NGOCard(ngo: NGO, navController: NavController) {
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-            
+
             Spacer(modifier = Modifier.height(4.dp))
-            
+
             Text(
                 text = ngo.location,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Text(
                 text = ngo.description,
                 style = MaterialTheme.typography.bodyMedium
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
-            Button(
-                onClick = { navController.navigate(Routes.ngoDetails(ngo.id)) },
-                modifier = Modifier.fillMaxWidth()
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Ver Detalhes")
+                Button(
+                    onClick = { navController.navigate(Routes.ngoDetails(ngo.id)) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Ver Detalhes")
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    onClick = { navController.navigate(Routes.payment(ngo.id, ngo.name)) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
+                ) {
+                    Text("Realizar Doação")
+                }
             }
         }
     }
@@ -151,4 +175,4 @@ fun NGOListScreenPreview() {
             NGOListScreen(previewNavController)
         }
     }
-} 
+}

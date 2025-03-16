@@ -34,6 +34,13 @@ android {
   buildFeatures {
     compose = true
   }
+
+  packaging {
+    resources {
+      excludes += "META-INF/DEPENDENCIES"
+    }
+  }
+
 }
 
 dependencies {
@@ -46,7 +53,8 @@ dependencies {
   implementation(libs.androidx.ui.graphics)
   implementation(libs.androidx.ui.tooling.preview)
   implementation(libs.androidx.material3)
-  testImplementation(libs.junit)
+    implementation(libs.androidx.material.icons.core.android)
+    testImplementation(libs.junit)
   testImplementation("org.mockito:mockito-core:5.3.1")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1")
   androidTestImplementation(libs.androidx.junit)
@@ -60,5 +68,15 @@ dependencies {
   debugImplementation(libs.androidx.ui.test.manifest)
 
   implementation(libs.androidx.navigation.compose)
+
+  implementation("com.google.android.gms:play-services-auth:21.3.0")
+  implementation("com.google.apis:google-api-services-calendar:v3-rev20230602-2.0.0")
+  implementation("com.google.http-client:google-http-client-gson:1.46.3")
+
+  implementation("com.stripe:stripe-android:21.6.0")
+
+  implementation("com.squareup.retrofit2:retrofit:2.9.0")
+  implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+  implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
 
 }

@@ -1,14 +1,33 @@
 package br.com.doafacil.screens
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,9 +37,6 @@ import androidx.navigation.compose.rememberNavController
 import br.com.doafacil.navigation.Routes
 import br.com.doafacil.ui.theme.DoaFacilTheme
 
-// Importamos a classe NGO do nosso pacote
-import br.com.doafacil.screens.NGO
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NGODetailsScreen(
@@ -28,9 +44,7 @@ fun NGODetailsScreen(
     navController: NavController
 ) {
     var showDonationDialog by remember { mutableStateOf(false) }
-    var showFeedbackDialog by remember { mutableStateOf(false) }
-    
-    // Dados mockados da ONG (em um app real, isso viria de um ViewModel)
+
     val ngo = remember {
         NGO(
             id = ngoId,
@@ -39,7 +53,7 @@ fun NGODetailsScreen(
             description = "Combate à fome e pobreza em regiões carentes do sertão nordestino através de ações continuadas nas áreas de educação, trabalho e renda, água, moradia e saúde."
         )
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -74,148 +88,42 @@ fun NGODetailsScreen(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            
+
             // Descrição completa
             Text(
                 text = "Sobre a ONG",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-            
+
             Text(
                 text = ngo.description,
                 style = MaterialTheme.typography.bodyLarge
             )
-            
-            // ... resto do código permanece igual
-        }
-    }
-    
-    // Dialog de doação
-    if (showDonationDialog) {
-        DonationDialog(
-            onDismiss = { showDonationDialog = false },
-            onConfirm = {
-                // Aqui seria gerado o QR Code do PIX
-                showDonationDialog = false
-                navController.navigate(Routes.DONATION_HISTORY)
-            }
-        )
-    }
-    
-    // Dialog de feedback
-    if (showFeedbackDialog) {
-        FeedbackDialog(
-            onDismiss = { showFeedbackDialog = false },
-            onSubmit = { rating, comment ->
-                // Aqui seria enviado o feedback para a API
-                showFeedbackDialog = false
-            }
-        )
-    }
-}
 
-@Composable
-private fun DonationDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (Double) -> Unit
-) {
-    var donationAmount by remember { mutableStateOf("") }
-    
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Fazer Doação") },
-        text = {
-            Column {
-                Text("Digite o valor que deseja doar:")
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = donationAmount,
-                    onValueChange = { donationAmount = it },
-                    label = { Text("Valor (R$)") },
-                    singleLine = true
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    donationAmount.toDoubleOrNull()?.let { onConfirm(it) }
-                }
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Gerar QR Code PIX")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancelar")
-            }
-        }
-    )
-}
-
-@Composable
-private fun FeedbackDialog(
-    onDismiss: () -> Unit,
-    onSubmit: (Int, String) -> Unit
-) {
-    var rating by remember { mutableStateOf(5) }
-    var comment by remember { mutableStateOf("") }
-    
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Avaliar ONG") },
-        text = {
-            Column {
-                Text("Sua avaliação é muito importante para nós!")
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // Rating
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                Button(
+                    onClick = { navController.navigate(Routes.payment(ngo.id, ngo.name)) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
                 ) {
-                    repeat(5) { index ->
-                        IconButton(
-                            onClick = { rating = index + 1 }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = null,
-                                tint = if (index < rating) 
-                                    MaterialTheme.colorScheme.primary 
-                                else 
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                    Text(text = "Realizar doação")
                 }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // Comentário
-                OutlinedTextField(
-                    value = comment,
-                    onValueChange = { comment = it },
-                    label = { Text("Comentário (opcional)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 3
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { onSubmit(rating, comment) }
-            ) {
-                Text("Enviar Avaliação")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+
+                Button(
+                    onClick = { navController.navigate(Routes.agendamento(ngo.id)) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(text = "Agendar visita")
+                }
             }
         }
-    )
+    }
 }
 
 @Preview(
@@ -238,4 +146,4 @@ fun NGODetailsScreenPreview() {
             )
         }
     }
-} 
+}

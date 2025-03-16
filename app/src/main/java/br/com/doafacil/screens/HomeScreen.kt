@@ -1,10 +1,12 @@
 package br.com.doafacil.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -15,10 +17,26 @@ import androidx.navigation.compose.rememberNavController
 import br.com.doafacil.R
 import br.com.doafacil.navigation.Routes
 import br.com.doafacil.ui.theme.DoaFacilTheme
+import br.com.doafacil.utils.GamificationManager
 
+@SuppressLint("AutoboxingStateCreation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(
+    navController: NavController,
+    userPoints: Int? = null,
+    userLevel: String? = null
+) {
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        GamificationManager.init(context)
+    }
+
+    val actualUserPoints = userPoints ?: GamificationManager.getPoints()
+    val actualUserLevel = userLevel ?: GamificationManager.getLevel()
+    val nextLevelThreshold = getNextLevelThreshold(actualUserPoints)
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -39,6 +57,15 @@ fun HomeScreen(navController: NavController) {
         ) {
             item {
                 WelcomeSection()
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            item {
+                GamificationSection(
+                    userPoints = actualUserPoints,
+                    userLevel = actualUserLevel,
+                    nextLevelThreshold = nextLevelThreshold
+                )
             }
 
             item {
@@ -49,13 +76,80 @@ fun HomeScreen(navController: NavController) {
                 QuickActionsSection(navController)
             }
 
-
             item {
                 EvaluationSection(navController)
             }
         }
     }
 }
+
+/**
+ * Seção de Gamificação: Exibe pontos, status e progresso do usuário
+ */
+@Composable
+fun GamificationSection(userPoints: Int, userLevel: String, nextLevelThreshold: Int) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Sua pontuação: $userPoints",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+
+            Text(
+                text = "Nível: $userLevel",
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Barra de progresso
+            LinearProgressIndicator(
+                progress = { userPoints.toFloat() / nextLevelThreshold.toFloat() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                text = "Próximo nível em ${nextLevelThreshold - userPoints} pontos",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+    }
+}
+
+/**
+ * Retorna o limite de pontos necessário para o próximo nível
+ */
+fun getNextLevelThreshold(userPoints: Int): Int {
+    return when {
+        userPoints >= 50000 -> 50000
+        userPoints >= 10000 -> 50000
+        userPoints >= 5000 -> 10000
+        userPoints >= 1000 -> 5000
+        userPoints >= 500 -> 1000
+        userPoints >= 100 -> 500
+        else -> 100
+    }
+}
+
 @Composable
 private fun WelcomeSection() {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -85,7 +179,6 @@ private fun EvaluationSection(navController: NavController) {
     }
 }
 
-
 @Composable
 private fun FeaturedNGOsSection(navController: NavController) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -95,14 +188,13 @@ private fun FeaturedNGOsSection(navController: NavController) {
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        
-        // Lista de ONGs em destaque (mockada por enquanto)
+
         val featuredNGOs = listOf(
             "Amigos do Bem" to "Combate à fome e pobreza",
             "Médicos Sem Fronteiras" to "Assistência médica humanitária",
             "WWF Brasil" to "Conservação da natureza"
         )
-        
+
         featuredNGOs.forEach { (name, description) ->
             Card(
                 modifier = Modifier
@@ -132,7 +224,7 @@ private fun QuickActionsSection(navController: NavController) {
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -145,7 +237,7 @@ private fun QuickActionsSection(navController: NavController) {
             ) {
                 Text(stringResource(R.string.view_all_ngos))
             }
-            
+
             Button(
                 onClick = { navController.navigate(Routes.DONATION_HISTORY) },
                 modifier = Modifier
@@ -161,18 +253,26 @@ private fun QuickActionsSection(navController: NavController) {
 @Preview(
     name = "Tela Inicial",
     showBackground = true,
-    showSystemUi = true,
-    device = "spec:width=411dp,height=891dp,dpi=420,isRound=false,chinSize=0dp,orientation=portrait"
+    showSystemUi = true
 )
 @Composable
 fun HomeScreenPreview() {
     val previewNavController = rememberNavController()
+
+    val fakeUserPoints = 30
+    val fakeUserLevel = "Iniciante"
+
     DoaFacilTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            HomeScreen(previewNavController)
+
+            HomeScreen(
+                navController = previewNavController,
+                userPoints = fakeUserPoints,
+                userLevel = fakeUserLevel
+            )
         }
     }
-} 
+}
