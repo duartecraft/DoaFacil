@@ -112,7 +112,6 @@ fun RateScreen(navController: NavController) {
                         if (!hasRatedBefore) {
                             GamificationManager.addPointsForAction(GamificationAction.FIRST_REVIEW)
 
-                            // Somente exibe Toast se não estiver no Preview
                             if (!isInPreview) {
                                 Toast.makeText(
                                     context,
@@ -161,5 +160,3 @@ fun RateScreenPreview() {
         }
     }
 }
-
-

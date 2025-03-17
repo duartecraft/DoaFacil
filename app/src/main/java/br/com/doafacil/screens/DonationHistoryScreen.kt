@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,10 +13,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.doafacil.ui.theme.DoaFacilTheme
-import br.com.doafacil.utils.GamificationManager
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,7 +32,6 @@ data class Donation(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DonationHistoryScreen(navController: NavController, userPoints: Int, userLevel: String) {
-
     val donations = remember {
         listOf(
             Donation("1", "Amigos do Bem", 100.0, Date(), "Confirmado"),
@@ -76,9 +74,8 @@ fun DonationHistoryScreen(navController: NavController, userPoints: Int, userLev
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
+
             DonationDashboard(donations, userPoints, userLevel)
-
-
 
             if (motivationalMessage.isNotEmpty()) {
                 Card(
@@ -90,15 +87,14 @@ fun DonationHistoryScreen(navController: NavController, userPoints: Int, userLev
                             .fillMaxWidth()
                             .padding(bottom = 4.dp)
                     ) {
-
                         Text(
                             text = motivationalMessage,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.primary,
                             fontSize = 16.sp,
                             modifier = Modifier
-                            .fillMaxWidth()
-                        .padding(start = 12.dp, bottom = 12.dp)
+                                .fillMaxWidth()
+                                .padding(start = 12.dp, bottom = 12.dp)
                         )
                     }
                 }

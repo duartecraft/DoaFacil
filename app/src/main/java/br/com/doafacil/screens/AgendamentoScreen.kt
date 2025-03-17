@@ -11,18 +11,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.ui.tooling.preview.Preview
-import br.com.doafacil.ui.theme.DoaFacilTheme
 import br.com.doafacil.auth.GoogleAuthHelper
+import br.com.doafacil.ui.theme.DoaFacilTheme
 import br.com.doafacil.utils.GoogleCalendarHelper
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import java.util.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,7 +81,6 @@ fun AgendamentoScreen(ngoId: String, navController: NavController) {
         val account = GoogleAuthHelper.getSignedInAccount(context)
 
         if (account != null) {
-
             GoogleCalendarHelper.createEvent(
                 context = context,
                 title = "Visita à ONG",
@@ -94,7 +91,6 @@ fun AgendamentoScreen(ngoId: String, navController: NavController) {
             )
             Toast.makeText(context, "Agendamento enviado ao Google Calendar!", Toast.LENGTH_SHORT).show()
         } else {
-            // Se não está logado, inicia o login
             GoogleAuthHelper.signInGoogle(
                 activity!!,
                 onSuccess = { loggedInAccount ->
@@ -118,15 +114,19 @@ fun AgendamentoScreen(ngoId: String, navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Agendar visita") },
+                title = { Text("ONGs Parceiras") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Voltar"
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -184,7 +184,7 @@ fun AgendamentoScreen(ngoId: String, navController: NavController) {
                         Button(
                             onClick = {
                                 showConfirmationDialog = false
-                                navController.popBackStack() // Volta para a tela da ONG
+                                navController.popBackStack()
                             }
                         ) {
                             Text("Seguir no app")

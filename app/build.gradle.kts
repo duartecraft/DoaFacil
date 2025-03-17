@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
@@ -14,6 +17,17 @@ android {
     targetSdk = 35
     versionCode = 1
     versionName = "1.0"
+
+    val properties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+
+    if (localPropertiesFile.exists()) {
+      properties.load(FileInputStream(localPropertiesFile))
+      buildConfigField("String", "STRIPE_PUBLIC_KEY", "\"${properties["STRIPE_PUBLIC_KEY"]}\"")
+      buildConfigField("String", "STRIPE_SECRET_KEY", "\"${properties["STRIPE_SECRET_KEY"]}\"")
+    } else {
+      throw GradleException("⚠️ Arquivo local.properties não encontrado! Crie-o na raiz do projeto.")
+    }
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -33,6 +47,7 @@ android {
   }
   buildFeatures {
     compose = true
+    buildConfig = true
   }
 
   packaging {
@@ -40,7 +55,6 @@ android {
       excludes += "META-INF/DEPENDENCIES"
     }
   }
-
 }
 
 dependencies {
@@ -53,8 +67,8 @@ dependencies {
   implementation(libs.androidx.ui.graphics)
   implementation(libs.androidx.ui.tooling.preview)
   implementation(libs.androidx.material3)
-    implementation(libs.androidx.material.icons.core.android)
-    testImplementation(libs.junit)
+  implementation(libs.androidx.material.icons.core.android)
+  testImplementation(libs.junit)
   testImplementation("org.mockito:mockito-core:5.3.1")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1")
   androidTestImplementation(libs.androidx.junit)
@@ -78,5 +92,4 @@ dependencies {
   implementation("com.squareup.retrofit2:retrofit:2.9.0")
   implementation("com.squareup.retrofit2:converter-gson:2.9.0")
   implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
-
 }
