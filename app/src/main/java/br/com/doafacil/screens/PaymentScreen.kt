@@ -1,5 +1,6 @@
 package br.com.doafacil.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
@@ -15,14 +16,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import br.com.doafacil.navigation.Routes
 import br.com.doafacil.network.PaymentIntentRequest
 import br.com.doafacil.network.RetrofitInstance
 import br.com.doafacil.ui.theme.DoaFacilTheme
-import br.com.doafacil.utils.GamificationManager
-import br.com.doafacil.utils.GamificationAction
-import com.stripe.android.paymentsheet.PaymentSheet
-import com.stripe.android.paymentsheet.PaymentSheetResult
+import br.com.doafacil.utils.PaymentHelperInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,7 +30,12 @@ import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PaymentScreen(navController: NavController, ngoId: String, ngoName: String) {
+fun PaymentScreen(
+    navController: NavController,
+    ngoId: String,
+    ngoName: String,
+    stripePaymentHelper: PaymentHelperInterface
+) {
     val context = LocalContext.current
     val isInPreview = LocalInspectionMode.current
     val coroutineScope = rememberCoroutineScope()
@@ -41,7 +43,6 @@ fun PaymentScreen(navController: NavController, ngoId: String, ngoName: String) 
     var donationAmount by remember { mutableStateOf("") }
     var clientSecret by remember { mutableStateOf<String?>(null) }
 
-    // Moedas disponíveis
     val availableCurrencies = listOf("BRL", "USD", "EUR", "GBP", "JPY")
     var selectedCurrency by remember { mutableStateOf("BRL") }
     var isDropdownExpanded by remember { mutableStateOf(false) }
@@ -50,31 +51,6 @@ fun PaymentScreen(navController: NavController, ngoId: String, ngoName: String) 
     if (!isInPreview && activity == null) {
         Toast.makeText(context, "Erro ao acessar a Activity!", Toast.LENGTH_LONG).show()
         return
-    }
-
-    val paymentSheet = remember {
-        if (!isInPreview) {
-            PaymentSheet(activity!!) { result ->
-                when (result) {
-                    is PaymentSheetResult.Completed -> {
-                        GamificationManager.addPointsForAction(GamificationAction.DONATION)
-                        val newPoints = GamificationManager.getPoints()
-                        Toast.makeText(
-                            context,
-                            "Pagamento bem-sucedido! \nVocê ganhou ${GamificationAction.DONATION.points} pontos!\nTotal: $newPoints pontos.",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        navController.navigate(Routes.donationConfirmation(ngoId, ngoName))
-                    }
-                    is PaymentSheetResult.Failed -> {
-                        Toast.makeText(context, "Erro no pagamento: ${result.error.localizedMessage}", Toast.LENGTH_LONG).show()
-                    }
-                    is PaymentSheetResult.Canceled -> {
-                        Toast.makeText(context, "Pagamento cancelado.", Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-        } else null
     }
 
     Scaffold(
@@ -92,7 +68,7 @@ fun PaymentScreen(navController: NavController, ngoId: String, ngoName: String) 
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary // Define a cor da seta como branca
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -104,7 +80,7 @@ fun PaymentScreen(navController: NavController, ngoId: String, ngoName: String) 
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Escolha o valor da doação:", style = MaterialTheme.typography.titleMedium)
+            Text("Escolha o valor da doação:", style = MaterialTheme.typography.titleMedium, fontSize = 16.sp)
 
             OutlinedTextField(
                 value = donationAmount,
@@ -118,7 +94,8 @@ fun PaymentScreen(navController: NavController, ngoId: String, ngoName: String) 
                         Text(
                             selectedCurrency,
                             modifier = Modifier.clickable { isDropdownExpanded = true },
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 16.sp,
                         )
                     }
                 },
@@ -146,22 +123,21 @@ fun PaymentScreen(navController: NavController, ngoId: String, ngoName: String) 
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 12.dp, end = 6.dp)
             )
 
             Button(
                 onClick = {
                     coroutineScope.launch {
+                        Log.d("PaymentScreen", "Criando PaymentIntent para valor: $donationAmount $selectedCurrency")
                         val secret = createPaymentIntent(donationAmount.toIntOrNull() ?: 0, selectedCurrency)
                         clientSecret = secret
                         if (!isInPreview) {
                             secret?.let {
-                                paymentSheet?.presentWithPaymentIntent(
-                                    it,
-                                    PaymentSheet.Configuration(
-                                        merchantDisplayName = "DoaFácil",
-                                        allowsDelayedPaymentMethods = true
-                                    )
-                                )
+                                Log.d("PaymentScreen", "🚀 Iniciando Stripe Payment")
+                                stripePaymentHelper.startPayment(it)
                             }
                         }
                     }
@@ -169,23 +145,25 @@ fun PaymentScreen(navController: NavController, ngoId: String, ngoName: String) 
                 modifier = Modifier.fillMaxWidth(),
                 enabled = donationAmount.isNotEmpty()
             ) {
-                Text("Doar agora")
+                Text(
+                    text = "Doar agora",
+                    fontSize = 16.sp)
             }
         }
     }
 }
 
-/**
- * Função para criar um PaymentIntent com a Stripe.
- */
 private suspend fun createPaymentIntent(amount: Int, currency: String): String? {
     return withContext(Dispatchers.IO) {
         try {
             val response = RetrofitInstance.api.createPaymentIntent(
                 PaymentIntentRequest(amount, currency)
             ).execute()
-            response.body()?.clientSecret
+            val clientSecret = response.body()?.clientSecret
+            Log.d("PaymentScreen", "ClientSecret recebido: $clientSecret")
+            clientSecret
         } catch (e: Exception) {
+            Log.e("PaymentScreen", "❌ Erro ao criar PaymentIntent: ${e.localizedMessage}")
             null
         }
     }
@@ -194,11 +172,18 @@ private suspend fun createPaymentIntent(amount: Int, currency: String): String? 
 @Preview(showBackground = true)
 @Composable
 fun PaymentScreenPreview() {
+    val fakeStripeHelper = object : PaymentHelperInterface {
+        override fun startPayment(clientSecret: String) {
+            Log.d("PaymentScreenPreview", "Simulação de pagamento iniciada")
+        }
+    }
+
     DoaFacilTheme {
         PaymentScreen(
             navController = rememberNavController(),
             ngoId = "1",
-            ngoName = "Amigos do Bem"
+            ngoName = "Amigos do Bem",
+            stripePaymentHelper = fakeStripeHelper
         )
     }
 }

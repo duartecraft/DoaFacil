@@ -8,9 +8,8 @@ object Routes {
     const val AGENDAMENTO = "agendamento/{ngoId}"
     const val PAYMENT = "payment/{ngoId}/{ngoName}"
     const val LOGIN = "login"
-    const val RATE = "Rate"
+    const val RATE = "rate"
     const val DONATION_CONFIRMATION = "donation_confirmation/{ngoId}/{ngoName}"
-
 
     fun ngoDetails(ngoId: String) = "ngo_details/$ngoId"
     fun agendamento(ngoId: String) = "agendamento/$ngoId"

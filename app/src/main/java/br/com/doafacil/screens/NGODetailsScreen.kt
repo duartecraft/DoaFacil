@@ -1,5 +1,14 @@
 package br.com.doafacil.screens
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import br.com.doafacil.navigation.Routes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,10 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,33 +29,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import br.com.doafacil.navigation.Routes
 import br.com.doafacil.ui.theme.DoaFacilTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NGODetailsScreen(
-    ngoId: String,
-    navController: NavController
-) {
-    var showDonationDialog by remember { mutableStateOf(false) }
-
+fun NGODetailsScreen(ngoId: String, navController: NavController) {
     val ngo = remember {
         NGO(
             id = ngoId,
             name = "Amigos do Bem",
             location = "São Paulo, SP",
-            description = "Combate à fome e pobreza em regiões carentes do sertão nordestino através de ações continuadas nas áreas de educação, trabalho e renda, água, moradia e saúde."
+            description = "A ONG Amigos do Bem combate a fome e a pobreza em regiões carentes do sertão nordestino através de ações continuadas nas áreas de educação, trabalho e renda, água, moradia e saúde."
         )
     }
 
@@ -82,18 +74,17 @@ fun NGODetailsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Informações básicas
-            Text(
-                text = ngo.location,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
 
-            // Descrição completa
             Text(
                 text = "Sobre a ONG",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "Localização: ${ngo.location}",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium
             )
 
             Text(
@@ -103,6 +94,7 @@ fun NGODetailsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Botões para ação
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
