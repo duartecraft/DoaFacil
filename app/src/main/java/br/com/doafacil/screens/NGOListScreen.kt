@@ -15,29 +15,24 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.doafacil.ui.theme.DoaFacilTheme
 import br.com.doafacil.navigation.Routes
+import br.com.doafacil.data.NGORepository
+import br.com.doafacil.model.NGO
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-
-data class NGO(
-    val id: String,
-    val name: String,
-    val location: String,
-    val description: String
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NGOListScreen(navController: NavController) {
     var searchQuery by remember { mutableStateOf("") }
+    var ngos by remember { mutableStateOf<List<NGO>>(emptyList()) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Lista mockada de ONGs
-    val ngos = remember {
-        listOf(
-            NGO("1", "Amigos do Bem", "São Paulo, SP", "Combate à fome e pobreza em regiões carentes"),
-            NGO("2", "Médicos Sem Fronteiras", "Rio de Janeiro, RJ", "Assistência médica humanitária em áreas de conflito"),
-            NGO("3", "WWF Brasil", "Brasília, DF", "Conservação da natureza e redução do impacto humano"),
-            NGO("4", "UNICEF Brasil", "São Paulo, SP", "Defesa dos direitos das crianças e adolescentes"),
-            NGO("5", "Teto Brasil", "São Paulo, SP", "Construção de moradias emergenciais para famílias vulneráveis")
-        )
+    // Carrega as ONGs na inicialização da tela
+    LaunchedEffect(Unit) {
+        try {
+            ngos = NGORepository.getAllNGOs()
+        } catch (e: Exception) {
+            errorMessage = "Erro ao carregar ONGs: ${e.message}"
+        }
     }
 
     Scaffold(
@@ -65,34 +60,56 @@ fun NGOListScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Barra de pesquisa
-            TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                placeholder = { Text("Pesquisar ONGs...") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Ícone de pesquisa"
+            if (errorMessage != null) {
+                // Exibe mensagem de erro caso ocorra um problema ao carregar os dados
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Erro ao carregar ONGs",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.error
                     )
-                },
-                singleLine = true
-            )
+                    Text(text = errorMessage ?: "", style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { navController.navigateUp() }) {
+                        Text("Voltar")
+                    }
+                }
+            } else {
+                // Barra de pesquisa
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    placeholder = { Text("Pesquisar ONGs...") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Ícone de pesquisa"
+                        )
+                    },
+                    singleLine = true
+                )
 
-            // Lista de ONGs
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(ngos.filter {
-                    it.name.contains(searchQuery, ignoreCase = true) ||
-                            it.description.contains(searchQuery, ignoreCase = true)
-                }) { ngo ->
-                    NGOCard(ngo = ngo, navController = navController)
+                // Lista de ONGs
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(ngos.filter {
+                        it.name.contains(searchQuery, ignoreCase = true) ||
+                                it.description.contains(searchQuery, ignoreCase = true)
+                    }) { ngo ->
+                        NGOCard(ngo = ngo, navController = navController)
+                    }
                 }
             }
         }

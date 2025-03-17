@@ -36,6 +36,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.doafacil.navigation.Routes
 import br.com.doafacil.ui.theme.DoaFacilTheme
+import br.com.doafacil.data.NGORepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,14 +46,8 @@ fun NGODetailsScreen(
 ) {
     var showDonationDialog by remember { mutableStateOf(false) }
 
-    val ngo = remember {
-        NGO(
-            id = ngoId,
-            name = "Amigos do Bem",
-            location = "São Paulo, SP",
-            description = "Combate à fome e pobreza em regiões carentes do sertão nordestino através de ações continuadas nas áreas de educação, trabalho e renda, água, moradia e saúde."
-        )
-    }
+    // Obtém a ONG da lista de ONGs com base no ID recebido
+    val ngo = remember { NGORepository.getNGOById(ngoId) }
 
     Scaffold(
         topBar = {
