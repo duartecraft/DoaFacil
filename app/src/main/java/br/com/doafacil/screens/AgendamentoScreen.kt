@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import br.com.doafacil.ui.theme.DoaFacilTheme
 import br.com.doafacil.auth.GoogleAuthHelper
 import br.com.doafacil.utils.GoogleCalendarHelper
+import br.com.doafacil.data.NGORepository
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import java.util.*
 import androidx.compose.material.icons.Icons
@@ -30,11 +31,8 @@ fun AgendamentoScreen(ngoId: String, navController: NavController) {
     val context = LocalContext.current
     val activity = context as? Activity
 
-    val ngo = remember {
-        listOf(
-            NGO("1", "Amigos do Bem", "São Paulo, SP", "Combate à fome e pobreza")
-        ).find { it.id == ngoId }
-    }
+    // Obtém a ONG da lista de ONGs com base no ID recebido
+    val ngo = remember { NGORepository.getNGOById(ngoId) }
 
     var selectedDate by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf("") }
