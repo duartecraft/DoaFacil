@@ -7,23 +7,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import br.com.doafacil.screens.*
-import br.com.doafacil.utils.StripePaymentHelper
-import br.com.doafacil.screens.AgendamentoScreen
-import br.com.doafacil.screens.PaymentScreen
-import br.com.doafacil.screens.DonationConfirmationScreen
-import br.com.doafacil.utils.GamificationManager
+import br.com.doafacil.utils.PaymentHelperInterface
 
 @Composable
-fun Navigation(navController: NavHostController, stripePaymentHelper: StripePaymentHelper) {
+fun Navigation(navController: NavHostController, stripePaymentHelper: PaymentHelperInterface) {
     NavHost(
         navController = navController,
         startDestination = Routes.LOGIN
     ) {
         composable(Routes.LOGIN) {
             LoginScreen(navController)
-        }
-        composable(Routes.RATE) {
-            RateScreen(navController)
         }
 
         composable(Routes.HOME) {
@@ -34,37 +27,11 @@ fun Navigation(navController: NavHostController, stripePaymentHelper: StripePaym
             NGOListScreen(navController)
         }
 
-        composable(Routes.NGO_LIST) {
-            NGOListScreen(navController)
-        }
-
         composable(
             route = Routes.NGO_DETAILS,
-            arguments = listOf(
-                navArgument("ngoId") { type = NavType.StringType }
-            )
+            arguments = listOf(navArgument("ngoId") { type = NavType.StringType })
         ) { backStackEntry ->
             NGODetailsScreen(
-                ngoId = backStackEntry.arguments?.getString("ngoId") ?: "",
-                navController = navController
-            )
-        }
-
-        composable(Routes.DONATION_HISTORY) {
-            DonationHistoryScreen(
-                navController,
-                userPoints = GamificationManager.getPoints(),
-                userLevel = GamificationManager.getLevel()
-            )
-        }
-
-        composable(
-            route = Routes.AGENDAMENTO,
-            arguments = listOf(
-                navArgument("ngoId") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            AgendamentoScreen(
                 ngoId = backStackEntry.arguments?.getString("ngoId") ?: "",
                 navController = navController
             )
@@ -79,19 +46,28 @@ fun Navigation(navController: NavHostController, stripePaymentHelper: StripePaym
         ) { backStackEntry ->
             val ngoId = backStackEntry.arguments?.getString("ngoId") ?: ""
             val ngoName = backStackEntry.arguments?.getString("ngoName") ?: ""
-            PaymentScreen(navController, ngoId, ngoName)
+
+            PaymentScreen(navController, ngoId, ngoName, stripePaymentHelper)
         }
 
+        composable(Routes.DONATION_HISTORY) {
+            DonationHistoryScreen(navController, userPoints = 100, userLevel = "Ouro")
+        }
+
+        // 🚀 ADICIONADO DE VOLTA: AgendamentoScreen
         composable(
-            route = Routes.DONATION_CONFIRMATION,
-            arguments = listOf(
-                navArgument("ngoId") { type = NavType.StringType },
-                navArgument("ngoName") { type = NavType.StringType }
-            )
+            route = Routes.AGENDAMENTO,
+            arguments = listOf(navArgument("ngoId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val ngoId = backStackEntry.arguments?.getString("ngoId") ?: ""
-            val ngoName = backStackEntry.arguments?.getString("ngoName") ?: ""
-            DonationConfirmationScreen(navController, ngoName, ngoId)
+            AgendamentoScreen(
+                ngoId = backStackEntry.arguments?.getString("ngoId") ?: "",
+                navController = navController
+            )
+        }
+
+        // 🚀 ADICIONADO DE VOLTA: RateScreen
+        composable(Routes.RATE) {
+            RateScreen(navController)
         }
     }
 }

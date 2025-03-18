@@ -78,7 +78,7 @@ fun AllPreviews() {
                         }
                     }
                 )
-                
+
                 PreviewSection(
                     title = "Lista de ONGs",
                     content = {
@@ -92,7 +92,7 @@ fun AllPreviews() {
                         }
                     }
                 )
-                
+
                 PreviewSection(
                     title = "Detalhes da ONG",
                     content = {
@@ -109,7 +109,7 @@ fun AllPreviews() {
                         }
                     }
                 )
-                
+
                 PreviewSection(
                     title = "Histórico de Doações",
                     content = {
@@ -145,7 +145,7 @@ private fun PreviewSection(
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(
@@ -163,4 +163,4 @@ private fun PreviewSection(
             }
         }
     }
-} 
+}

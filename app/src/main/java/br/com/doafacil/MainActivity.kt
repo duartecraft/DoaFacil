@@ -13,8 +13,13 @@ import br.com.doafacil.ui.theme.DoaFacilTheme
 import br.com.doafacil.utils.StripePaymentHelper
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var stripePaymentHelper: StripePaymentHelper
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        stripePaymentHelper = StripePaymentHelper(this)
 
         setContent {
             DoaFacilTheme {
@@ -23,11 +28,6 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-
-                    // 🔹 Criando uma instância de StripePaymentHelper
-                    val stripePaymentHelper = StripePaymentHelper(this, this)
-
-                    // 🔹 Passando stripePaymentHelper para Navigation
                     Navigation(navController, stripePaymentHelper)
                 }
             }

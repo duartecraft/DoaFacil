@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,10 +13,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import br.com.doafacil.ui.theme.DoaFacilTheme
-import br.com.doafacil.utils.GamificationManager
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,7 +32,6 @@ data class Donation(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DonationHistoryScreen(navController: NavController, userPoints: Int, userLevel: String) {
-
     val donations = remember {
         listOf(
             Donation("1", "Amigos do Bem", 100.0, Date(), "Confirmado"),
@@ -76,9 +74,8 @@ fun DonationHistoryScreen(navController: NavController, userPoints: Int, userLev
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
+
             DonationDashboard(donations, userPoints, userLevel)
-
-
 
             if (motivationalMessage.isNotEmpty()) {
                 Card(
@@ -90,15 +87,14 @@ fun DonationHistoryScreen(navController: NavController, userPoints: Int, userLev
                             .fillMaxWidth()
                             .padding(bottom = 4.dp)
                     ) {
-
                         Text(
                             text = motivationalMessage,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.primary,
                             fontSize = 16.sp,
                             modifier = Modifier
-                            .fillMaxWidth()
-                        .padding(start = 12.dp, bottom = 12.dp)
+                                .fillMaxWidth()
+                                .padding(start = 12.dp, bottom = 12.dp)
                         )
                     }
                 }
@@ -127,13 +123,22 @@ fun DonationDashboard(donations: List<Donation>, userPoints: Int, userLevel: Str
     val totalDonated = donations.sumOf { it.amount }
     val numberFormat = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
 
+    val currentLevel = when {
+        userPoints < 100 -> "Iniciante"
+        userPoints < 500 -> "Bronze"
+        userPoints < 1000 -> "Prata"
+        userPoints < 5000 -> "Ouro"
+        userPoints < 10000 -> "Diamante"
+        else -> "Rubi"
+    }
+
     val nextLevel = when {
         userPoints < 100 -> "Bronze"
         userPoints < 500 -> "Prata"
         userPoints < 1000 -> "Ouro"
         userPoints < 5000 -> "Diamante"
-        userPoints < 10000 -> "Safira"
-        else -> "Rubi"
+        userPoints < 10000 -> "Rubi"
+        else -> "Máximo"
     }
 
     val pointsForNextLevel = when {
@@ -141,7 +146,17 @@ fun DonationDashboard(donations: List<Donation>, userPoints: Int, userLevel: Str
         userPoints < 500 -> 500 - userPoints
         userPoints < 1000 -> 1000 - userPoints
         userPoints < 5000 -> 5000 - userPoints
+        userPoints < 10000 -> 10000 - userPoints
         else -> 0
+    }
+
+    val progress = when {
+        userPoints < 100 -> userPoints / 100f
+        userPoints < 500 -> (userPoints - 100) / 400f
+        userPoints < 1000 -> (userPoints - 500) / 500f
+        userPoints < 5000 -> (userPoints - 1000) / 4000f
+        userPoints < 10000 -> (userPoints - 5000) / 5000f
+        else -> 1f
     }
 
     CardSection(
@@ -151,9 +166,9 @@ fun DonationDashboard(donations: List<Donation>, userPoints: Int, userLevel: Str
 
     CardSection(
         title = "Nível e pontuação",
-        content = "Nível: $userLevel\nPontuação: $userPoints pontos\n",
+        content = "Nível atual: $currentLevel\nPontuação: $userPoints pontos\n",
         showProgress = true,
-        progress = userPoints.toFloat() / 100f,
+        progress = progress,
         progressText = "Faltam $pointsForNextLevel pontos para atingir *$nextLevel*"
     )
 }

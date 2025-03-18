@@ -11,7 +11,6 @@ object GamificationManager {
         prefs = context.getSharedPreferences("gamification_prefs", Context.MODE_PRIVATE)
     }
 
-    // Adicionados os pontos com base na ação
     fun addPointsForAction(action: GamificationAction) {
         val sharedPrefs = prefs ?: throw IllegalStateException("GamificationManager não foi inicializado. Chame GamificationManager.init(context) antes de usar.")
 
@@ -20,12 +19,10 @@ object GamificationManager {
         sharedPrefs.edit { putInt("points", newPoints) }
     }
 
-    // Retorna a pontuação atual do usuário
     fun getPoints(): Int {
         return prefs?.getInt("points", 0) ?: 0
     }
 
-    // Retorna o nível do usuário baseado na pontuação
     fun getLevel(): String {
         val points = getPoints()
         return when {

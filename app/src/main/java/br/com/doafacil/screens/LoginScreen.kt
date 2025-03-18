@@ -102,7 +102,7 @@ fun LoginScreen(navController: NavController) {
                     .height(350.dp),
 
 
-            )
+                )
             {
 
                 Column(
@@ -153,7 +153,7 @@ fun LoginScreen(navController: NavController) {
                         visualTransformation = PasswordVisualTransformation(),
 
 
-                    )
+                        )
 
                     if (erroSenha) {
                         Text(
@@ -200,7 +200,6 @@ fun LoginScreen(navController: NavController) {
 
                 }
             }
-
         }
     }
 }
