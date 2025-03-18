@@ -77,18 +77,19 @@ fun NGODetailsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Informações básicas
-            Text(
-                text = ngo.location,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
 
             // Descrição completa
             Text(
                 text = "Sobre a ONG",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
+            )
+
+            // Informações básicas
+            Text(
+                text = ngo.location,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Text(

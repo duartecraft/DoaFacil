@@ -18,6 +18,8 @@ import br.com.doafacil.R
 import br.com.doafacil.navigation.Routes
 import br.com.doafacil.ui.theme.DoaFacilTheme
 import br.com.doafacil.utils.GamificationManager
+import br.com.doafacil.data.NGORepository
+import br.com.doafacil.model.NGO
 
 @SuppressLint("AutoboxingStateCreation")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -181,6 +183,13 @@ private fun EvaluationSection(navController: NavController) {
 
 @Composable
 private fun FeaturedNGOsSection(navController: NavController) {
+    var ngos by remember { mutableStateOf<List<NGO>>(emptyList()) }
+
+    // Carrega os dados apenas uma vez
+    LaunchedEffect(Unit) {
+        ngos = NGORepository.getAllNGOs().take(3)
+    }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = stringResource(R.string.featured_ngos),
@@ -189,26 +198,20 @@ private fun FeaturedNGOsSection(navController: NavController) {
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        val featuredNGOs = listOf(
-            "Amigos do Bem" to "Combate à fome e pobreza",
-            "Médicos Sem Fronteiras" to "Assistência médica humanitária",
-            "WWF Brasil" to "Conservação da natureza"
-        )
-
-        featuredNGOs.forEach { (name, description) ->
+        ngos.forEach { ngo ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp),
-                onClick = { navController.navigate(Routes.ngoDetails("1")) }
+                onClick = { navController.navigate(Routes.ngoDetails(ngo.id)) }
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    Text(text = name, fontWeight = FontWeight.Bold)
-                    Text(text = description)
+                    Text(text = ngo.name, fontWeight = FontWeight.Bold)
+                    Text(text = ngo.description)
                 }
             }
         }
