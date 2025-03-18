@@ -11,16 +11,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import br.com.doafacil.auth.GoogleAuthHelper
+import androidx.compose.ui.tooling.preview.Preview
 import br.com.doafacil.ui.theme.DoaFacilTheme
+import br.com.doafacil.auth.GoogleAuthHelper
 import br.com.doafacil.utils.GoogleCalendarHelper
+import br.com.doafacil.data.NGORepository
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import java.util.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,11 +31,8 @@ fun AgendamentoScreen(ngoId: String, navController: NavController) {
     val context = LocalContext.current
     val activity = context as? Activity
 
-    val ngo = remember {
-        listOf(
-            NGO("1", "Amigos do Bem", "São Paulo, SP", "Combate à fome e pobreza")
-        ).find { it.id == ngoId }
-    }
+    // Obtém a ONG da lista de ONGs com base no ID recebido
+    val ngo = remember { NGORepository.getNGOById(ngoId) }
 
     var selectedDate by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf("") }
@@ -81,6 +81,7 @@ fun AgendamentoScreen(ngoId: String, navController: NavController) {
         val account = GoogleAuthHelper.getSignedInAccount(context)
 
         if (account != null) {
+
             GoogleCalendarHelper.createEvent(
                 context = context,
                 title = "Visita à ONG",
@@ -91,6 +92,7 @@ fun AgendamentoScreen(ngoId: String, navController: NavController) {
             )
             Toast.makeText(context, "Agendamento enviado ao Google Calendar!", Toast.LENGTH_SHORT).show()
         } else {
+            // Se não está logado, inicia o login
             GoogleAuthHelper.signInGoogle(
                 activity!!,
                 onSuccess = { loggedInAccount ->
@@ -114,19 +116,15 @@ fun AgendamentoScreen(ngoId: String, navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("ONGs Parceiras") },
+                title = { Text("Agendar visita") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Voltar"
-                        )
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -184,7 +182,7 @@ fun AgendamentoScreen(ngoId: String, navController: NavController) {
                         Button(
                             onClick = {
                                 showConfirmationDialog = false
-                                navController.popBackStack()
+                                navController.popBackStack() // Volta para a tela da ONG
                             }
                         ) {
                             Text("Seguir no app")
